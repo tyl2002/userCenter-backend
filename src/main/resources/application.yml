@@ -4,9 +4,10 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
 #    url: jdbc:mysql://localhost:3306/user-center
-    url: jdbc:mysql://49.232.54.145:3306/usercenter
+#    url: jdbc:mysql://49.232.54.145:3306/usercenter
+    url: jdbc:mysql://bj-cdb-mo0882ci.sql.tencentcdb.com:26475/user-center
     username: root
-    password: password
+    password: 20020718tyl.
   session:
     timeout: 86400
 server:

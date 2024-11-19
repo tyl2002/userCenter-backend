@@ -86,6 +86,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setUserAccount(userAccount);
         user.setUserPassword(encryptPassword);
         user.setCode(code);
+        if(user.getAvatarUrl()==null){
+            user.setAvatarUrl("https://www.codefather.cn/static/bcdh_avatar.4b4d3128.webp");
+        }
+        if(user.getUserName()==null){
+            user.setUserName(userAccount);
+        }
         boolean save = this.save(user);
         if(!save){
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"注册失败");
@@ -96,20 +102,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         if(StringUtils.isAllBlank(userAccount,userPassword)){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账号或密码为空！");
         }
-        if(userAccount.length()<=4){
-            return null;
+        if(userAccount.length()<4){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账号长度小于4！");
         }
         if (userPassword.length() < 8){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"密码长度小于8！");
         }
         //账户不包含特殊字符
         String regEx = "[ _`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]|\\n|\\r|\\t";
         Pattern pattern = Pattern.compile(regEx);
         Matcher m = pattern.matcher(userAccount);
         if(m.find()){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账号中包含特殊字符！");
         }
         //加密
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT+userPassword).getBytes());
@@ -120,7 +126,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         User user = usermapper.selectOne(queryWrapper);
         if(user == null){
             log.info("user login failed ,userAccount cannot match userPassword");
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账号或密码错误！");
         }
         User safetyUser = getSafetyUser(user);
         //记录登录状态
@@ -130,7 +136,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public User getSafetyUser(User user){
         if(user == null){
-            return null;
+            throw new BusinessException(ErrorCode.NOT_LOGIN,"未检测到登录信息，请重新登陆！");
         }
         //用户脱敏
         User safetyUser = new User();

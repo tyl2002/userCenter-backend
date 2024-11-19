@@ -12,6 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 import com.tyl.usercenterbe.model.domain.request.UserRegisterRequest;
 import com.tyl.usercenterbe.service.UserService;
 import jakarta.annotation.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.View;
@@ -31,6 +33,7 @@ import static com.tyl.usercenterbe.constant.UserConstant.USER_LOGIN_STATE;
 @RestController
 @RequestMapping("/user")
 public class UserController {
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
     @Resource
     private UserService userService;
     @Autowired
@@ -55,36 +58,41 @@ public class UserController {
     @PostMapping("/logout")
     public BaseResponse<Integer> userLogout(HttpServletRequest request){
         if(request == null){
-            return null;
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR);
         }
         int result = userService.userLogout(request);
-        return ResultUtils.success(result);
+        return ResultUtils.success(result,"注销成功");
     }
 
     @GetMapping("/current")
     public BaseResponse<User> userCurrent(HttpServletRequest request){
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
         User user = (User) userObj;
+        log.info(String.valueOf(user));
         if(user == null){
-            return null;
+            throw new BusinessException(ErrorCode.NOT_LOGIN,"未检测到登录信息，请重新登陆！");
         }
         long id = user.getId();
         User current = userService.getById(id);
         User safetyUser = userService.getSafetyUser(current);
         return ResultUtils.success(safetyUser);
+
     }
 
     @PostMapping("/login")
     public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest,HttpServletRequest request){
         if(userLoginRequest == null){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
         if(StringUtils.isAllBlank(userAccount,userPassword)){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         User result = userService.userLogin(userAccount, userPassword, request);
+        if(result == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账号或密码错误！");
+        }
         return ResultUtils.success(result);
     }
     @GetMapping("/search")
