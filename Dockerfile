@@ -1,4 +1,4 @@
-FROM maven:3.9.3-openjdk-17 as builder
+FROM maven:3.9.3-eclipse-temurin-17 AS builder
 
 # Copy local code to the container image.
 WORKDIR /app
