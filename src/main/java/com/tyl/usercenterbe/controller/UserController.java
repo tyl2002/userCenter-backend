@@ -27,7 +27,7 @@ import static com.tyl.usercenterbe.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * 用户控制层
- *
+ *提供接口
  * @author tyl
  */
 @RestController
